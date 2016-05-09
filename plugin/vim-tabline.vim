@@ -39,6 +39,12 @@ endif
 "if !exists("s:tablineset")
 "	let s:tablineset = [0]
 "endif
+if !exists("g:tabline_buffer_full_path")
+	let g:tabline_buffer_full_path = 0
+endif
+if !exists("g:tabline_use_powerline_fonts")
+	let g:tabline_use_powerline_fonts = 1
+endif
 
 "===  FUNCTION  ================================================================
 "          NAME:  VimTabLabel     {{{1
@@ -56,10 +62,7 @@ function! VimTabLabel(n)
 	if tablabel == ''
 		let tablabel = '[No-Name]'
 	else
-		let tablabellen = strridx(tablabel, '.')
-		if tablabellen > 0
-			let tablabel = tablabel[0:tablabellen - 1]
-		endif
+		let tablabel = fnamemodify( tablabel, ':t:r' )
 	endif
 	return tablabel
 endfunction
@@ -72,22 +75,24 @@ endfunction
 "===============================================================================
 function! VimBufLabels(n)
 	let s:bufnames = {}
-	let s .= '%#Buf#'
+	let s = '%#BufFill#'
 	let s .= 'Buffers'
+	let s .= '%#Buf#'
 	for tabnr in range( 1, tabpagenr('$') )
 		for bufnr in tabpagebuflist( tabnr )
 			let bufname = bufname( bufnr )
-			if s:verbose =~ 'full_path'
-				let bufname = fnamemodify( bufname, ':p' )
+			if g:tabline_buffer_full_path
+				let bufname = fnamemodify( bufname, ':~' )
 			else
 				let bufname = fnamemodify( bufname, ':t' )
 			endif
 			if bufname == ''
 				let bufname = '[No Name]'
 			endif
-			let s:bufnames[ bufnr ] = bufname
+			let s .= ' ' . bufnr . ':' . bufname
 		endfor
 	endfor
+	return s
 endfunction
 
 "===  FUNCTION  ================================================================
@@ -102,6 +107,7 @@ endfunction
 "===============================================================================
 function! VimTabLine()
 	let s = ''
+	let s .= VimBufLabels(tabpagenr())
 	let s .= '%='
 	for i in range(tabpagenr('$'))
 		if i + 1 == tabpagenr()
@@ -133,9 +139,10 @@ function! VimTabSet_hl()
 	hi! TabClose  term=BOLD    ctermfg=yellow   ctermbg=red
 	hi! Sep       term=NONE    ctermfg=black    ctermbg=white
 	hi! SepRev    term=REVERSE ctermfg=black    ctermbg=white
-	hi! Buf       term=BOLD    ctermfg=yellow   ctermbg=darkgreen
+	hi! Buf       term=BOLD    ctermfg=yellow   ctermbg=darkred
 	hi! BufSel    term=BOLD    ctermfg=magenta  ctermbg=blue
 	hi! BufRev    term=BOLD    ctermfg=magenta  ctermbg=blue
+	hi! BufFill   term=NONE    ctermfg=yellow   ctermbg=black
 endfunction
 
 call VimTabSet_hl()
