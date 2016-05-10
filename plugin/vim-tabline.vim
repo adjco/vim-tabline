@@ -45,6 +45,17 @@ endif
 if !exists("g:tabline_use_powerline_fonts")
 	let g:tabline_use_powerline_fonts = 1
 endif
+if exists('g:airline_symbols')
+	let g:tabline_left_sep = ''
+	let g:tabline_left_alt_sep = ''
+	let g:tabline_right_sep = ''
+	let g:tabline_right_alt_sep = ''
+else
+	let g:tabline_left_sep = '»'
+	let g:tabline_left_sep = '▶'
+	let g:tabline_right_sep = '«'
+	let g:tabline_right_sep = '◀'
+endif
 
 "===  FUNCTION  ================================================================
 "          NAME:  VimTabLabel     {{{1
@@ -53,7 +64,7 @@ endif
 "                 extension is removed fos use as the tab name. If there is no
 "                 current buffer name, it is set to "[No-Name].
 "    PARAMETERS:  n - Current tab number
-"       RETURNS:  Tab name or [No-Name] if there is no buffer name.
+"       RETURNS:    - Tab name or [No-Name] if there is no buffer name.
 "===============================================================================
 function! VimTabLabel(n)
 	let buflist = tabpagebuflist(a:n)
@@ -71,26 +82,24 @@ endfunction
 "          NAME:  VimBufLabels     {{{1
 "   DESCRIPTION:
 "    PARAMETERS:  n - Current tab number
-"       RETURNS:  A string containing the buffer names
+"       RETURNS:    - A string containing the buffer names
 "===============================================================================
 function! VimBufLabels(n)
 	let s:bufnames = {}
 	let s = '%#BufFill#'
 	let s .= 'Buffers'
 	let s .= '%#Buf#'
-	for tabnr in range( 1, tabpagenr('$') )
-		for bufnr in tabpagebuflist( tabnr )
-			let bufname = bufname( bufnr )
-			if g:tabline_buffer_full_path
-				let bufname = fnamemodify( bufname, ':~' )
-			else
-				let bufname = fnamemodify( bufname, ':t' )
-			endif
-			if bufname == ''
-				let bufname = '[No Name]'
-			endif
-			let s .= ' ' . bufnr . ':' . bufname
-		endfor
+	for bufnr in tabpagebuflist( tabpagenr())
+		let bufname = bufname( bufnr )
+		if g:tabline_buffer_full_path
+			let bufname = fnamemodify( bufname, ':~' )
+		else
+			let bufname = fnamemodify( bufname, ':t' )
+		endif
+		if bufname == ''
+			let bufname = '[No Name]'
+		endif
+		let s .= ' ' . bufnr . ':' . bufname
 	endfor
 	return s
 endfunction
@@ -111,12 +120,12 @@ function! VimTabLine()
 	let s .= '%='
 	for i in range(tabpagenr('$'))
 		if i + 1 == tabpagenr()
-			let s .= '%#TabSel#'
+			let s .= g:tabline_right_sep . '%#TabSel#'
 		else
-			let s .= '%#Tab#'
+			let s .= g:tabline_right_sep . '%#Tab#'
 		endif
 		let s .= '%' . (i + 1) . 'T'
-		let s .= (i + 1) . ':%{VimTabLabel(' . (i + 1) . ')} '
+		let s .= (i + 1) . ':%{VimTabLabel(i + 1)} '
 	endfor
 	if tabpagenr('$') > 1
 		let s .= '%#TabClose#%999X ╳ '
