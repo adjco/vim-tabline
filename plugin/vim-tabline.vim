@@ -51,10 +51,10 @@ if exists('g:airline_symbols')
 	let g:tabline_right_sep = ''
 	let g:tabline_right_alt_sep = ''
 else
-	let g:tabline_left_sep = '»'
-	let g:tabline_left_sep = '▶'
-	let g:tabline_right_sep = '«'
-	let g:tabline_right_sep = '◀'
+	let g:tabline_left_alt_sep = '|'
+	let g:tabline_left_sep = ' '
+	let g:tabline_right_alt_sep = '|'
+	let g:tabline_right_sep = ' '
 endif
 
 "===  FUNCTION  ================================================================
@@ -81,27 +81,20 @@ endfunction
 "===  FUNCTION  ================================================================
 "          NAME:  VimBufLabels     {{{1
 "   DESCRIPTION:
-"    PARAMETERS:  n - Current tab number
-"       RETURNS:    - A string containing the buffer names
+"    PARAMETERS:  n - Current buffer number
+"       RETURNS:    - Buffer name or [No-Name] if there is no buffer name.
 "===============================================================================
-function! VimBufLabels(n)
-	let s:bufnames = {}
-	let s = '%#BufFill#'
-	let s .= 'Buffers'
-	let s .= '%#Buf#'
-	for bufnr in tabpagebuflist( tabpagenr())
-		let bufname = bufname( bufnr )
-		if g:tabline_buffer_full_path
-			let bufname = fnamemodify( bufname, ':~' )
-		else
-			let bufname = fnamemodify( bufname, ':t' )
-		endif
-		if bufname == ''
-			let bufname = '[No Name]'
-		endif
-		let s .= ' ' . bufnr . ':' . bufname
-	endfor
-	return s
+function! VimBufLabel(n)
+	let buflabel = bufname( a:n )
+	if g:tabline_buffer_full_path
+		let buflabel = fnamemodify( buflabel, ':~' )
+	else
+		let buflabel = fnamemodify( buflabel, ':t' )
+	endif
+	if buflabel == ''
+		let buflabel = '[No Name]'
+	endif
+	return buflabel
 endfunction
 
 "===  FUNCTION  ================================================================
@@ -115,20 +108,75 @@ endfunction
 "       RETURNS:  - Nothing
 "===============================================================================
 function! VimTabLine()
-	let s = ''
-	let s .= VimBufLabels(tabpagenr())
+	let bufferlist = tabpagebuflist(tabpagenr())
+	let numBuffers = len(bufferlist)
+	let firstBuffer = bufferlist[0]
+	let lastBuffer = bufferlist[numBuffers - 1]
+	let s = '%#BufFill#Buffers'
+	for bufnr in bufferlist
+		if bufnr == firstBuffer             " seperator at start of buffer list
+			if bufnr == bufnr('%')
+				let s .= '%#BufSepA#' . g:tabline_left_sep . '%#BufSel#'
+			else
+				let s .= '%#BufSepB#' . g:tabline_left_sep . '%#Buf#'
+			endif
+		endif
+		let bufPos = index(bufferlist, bufnr)
+		if bufPos > 0                         " seperator within buffer list
+			let activeBufPos = index(bufferlist, bufnr('%'))
+			if bufPos <= activeBufPos - 1     " multiple buffers before active
+				let s .= ' ' . g:tabline_left_alt_sep . ' '
+			elseif bufPos - 1 == activeBufPos " previous buffer active
+				let s .= '%#Buf#' . g:tabline_left_sep . '%#Buf#'
+			elseif bufPos == activeBufPos     " this buffer active
+				let s .= '%#BufSel#' . g:tabline_left_sep . '%#BufSel#'
+			elseif bufPos + 1 == activeBufPos " next buffer active
+				let s .= '%#Buf#' . g:tabline_left_sep . '%#Buf#'
+			else                              " multiple buffers after active
+				let s .= ' ' . g:tabline_left_alt_sep . ' '
+			endif
+		endif
+		let s .= bufnr . ':%{VimBufLabel(' . bufnr . ')}'
+		if bufnr == lastBuffer                " seperator at end of buffer list
+			if bufnr == bufnr('%')
+				let s .= '%#BufSepC#' . g:tabline_left_sep . '%#BufFill#'
+			else
+				let s .= '%#BufSepD#' . g:tabline_left_sep . '%#BufFill#'
+			endif
+		endif
+	endfor
 	let s .= '%='
 	for i in range(tabpagenr('$'))
-		if i + 1 == tabpagenr()
-			let s .= g:tabline_right_sep . '%#TabSel#'
-		else
-			let s .= g:tabline_right_sep . '%#Tab#'
+		if i == 0                                " first tab
+			if i + 1 == tabpagenr()
+				let s .= '%#TabSepA#' . g:tabline_right_sep . '%#TabSel#'
+			else
+				let s .= '%#TabSepB#' . g:tabline_right_sep . '%#Tab#'
+			endif
+		endif
+		let thisTab = i + 1
+		if thisTab > 1                      " seperator within tab list
+			if thisTab <= tabpagenr() - 1    " multiple tabs before active
+				let s .= ' ' . g:tabline_right_alt_sep . ' '
+			elseif thisTab - 1 == tabpagenr() " previous tab active
+				let s .= '%#TabSel#' . g:tabline_right_sep . '%#Tab#'
+			elseif thisTab == tabpagenr()     " this tab active
+				let s .= '%#Tab#' . g:tabline_right_sep . '%#TabSel#'
+			elseif thisTab + 1 == tabpagenr() " next tab active
+				let s .= '%#TabSel#' . g:tabline_right_sep . '%#Tab#'
+			else                              " multiple tabs after active
+				let s .= ' ' . g:tabline_right_alt_sep . ' '
+			endif
 		endif
 		let s .= '%' . (i + 1) . 'T'
-		let s .= (i + 1) . ':%{VimTabLabel(i + 1)} '
+		let s .= (i + 1) . ':%{VimTabLabel(' . (i + 1) . ')}'
 	endfor
 	if tabpagenr('$') > 1
-		let s .= '%#TabClose#%999X ╳ '
+		if i + 1 == tabpagenr()                  " last tab
+			let s .= '%#TabSepC#' . g:tabline_right_sep . '%#Close#%999XClose'
+		else
+			let s .= '%#TabSepD#' . g:tabline_right_sep . '%#Close#%999XClose'
+		endif
 	endif
 	return s
 endfunction
@@ -141,17 +189,19 @@ endfunction
 "===============================================================================
 function! VimTabSet_hl()
 	hi! Tab       term=BOLD    ctermfg=green    ctermbg=darkred
-	hi! TabSel    term=BOLD    ctermfg=black    ctermbg=green
-	hi! TabRev    term=BOLD    ctermfg=magenta  ctermbg=blue
-	hi! TabFill   term=NONE    ctermfg=black    ctermbg=black
-	hi! TabEnd    term=NONE    ctermfg=white    ctermbg=black
-	hi! TabClose  term=BOLD    ctermfg=yellow   ctermbg=red
-	hi! Sep       term=NONE    ctermfg=black    ctermbg=white
-	hi! SepRev    term=REVERSE ctermfg=black    ctermbg=white
+	hi! TabSel    term=BOLD    ctermfg=darkred  ctermbg=green
+	hi! TabSepA   term=NONE    ctermfg=green    ctermbg=black
+	hi! TabSepB   term=NONE    ctermfg=darkred  ctermbg=black
+	hi! TabSepC   term=BOLD    ctermfg=black    ctermbg=green
+	hi! TabSepD   term=BOLD    ctermfg=black    ctermbg=darkred
+	hi! Close     term=NONE    ctermfg=green    ctermbg=black
 	hi! Buf       term=BOLD    ctermfg=yellow   ctermbg=darkred
-	hi! BufSel    term=BOLD    ctermfg=magenta  ctermbg=blue
-	hi! BufRev    term=BOLD    ctermfg=magenta  ctermbg=blue
+	hi! BufSel    term=BOLD    ctermfg=darkred  ctermbg=yellow
 	hi! BufFill   term=NONE    ctermfg=yellow   ctermbg=black
+	hi! BufSepA   term=NONE    ctermfg=black    ctermbg=yellow
+	hi! BufSepB   term=NONE    ctermfg=black    ctermbg=darkred
+	hi! BufSepC   term=NONE    ctermfg=yellow   ctermbg=black
+	hi! BufSepD   term=NONE    ctermfg=darkred  ctermbg=black
 endfunction
 
 call VimTabSet_hl()

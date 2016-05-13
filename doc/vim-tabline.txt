@@ -18,34 +18,34 @@ the current tab, including the buffer number. On the right there is a list of
 all the tabs in the current session. The tab names can be clicked with the
 left mouse button to change tabs.
 
-**NOTE** This plugin only works in terminal vim, **NOT** gvim.
+**NOTE** This plugin only works in terminal vim, **NOT** gvim. gvim has it's
+own tabline see 'guioptions' and 'guitablabel'.
 
 ==============================================================================
                                                     *vim-tabline-Installation*
 Installation~
-The easiest way to install this plugin is via
-[Vundle](https://github.com/gmarik/Vundle.vim). Simply put
+The easiest way to install this plugin is via Vundle. Simply put
 `Plugin 'adjco/vim-tabline'`between the `call vundle#begin()` and
 `call vundle#end() tags` and then run `PluginInstall` or `PluginUpdate`.
-Alternatively, download the
-[archive](https://github.com/adjco/vim-tabline/archive/master.zip)
-and extract it in your `~/.vim/` directory.
+Alternatively, download the archive from
+https://github.com/adjco/vim-tabline/archive/master.zip and extract it in
+your `~/.vim/` directory.
 
 ==============================================================================
                                                            *vim-tabline-Usage*
 Usage~
 
-If you have [vim-airline](https://github.com/vim-airline/vim-airline) or
-[powerline](https://github.com/powerline/powerline) installed with the
-powerline fonts, this plugin can use those fonts to blend in. Disable this by
-putting this in your `.vimrc`:
-
+If you have vim-airline or powerline installed with the powerline fonts, this
+plugin can use those fonts to blend in. Disable this by putting this in your
+`.vimrc`:
+>
     g:vim_tabline_use_powerline_fonts = 0
+<
 By default, the buffer name is shortened to just the filename. To use the full
 path (relative to your home directory) put this in your `.vimrc`:
-
+>
     g:vim_tabline_buffer_full_path = 1
-
+<
 ==============================================================================
                                                          *vim-tabline-License*
 License~
