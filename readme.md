@@ -27,6 +27,7 @@ powerline fonts, this plugin can use those fonts to blend in. Disable this by
 putting this in your `.vimrc`:
 
     g:vim_tabline_use_powerline_fonts = 0
+
 By default, the buffer name is shortened to just the filename. To use the full
 path (relative to your home directory) put this in your `.vimrc`:
 

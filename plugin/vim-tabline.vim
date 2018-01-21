@@ -43,9 +43,9 @@ if !exists("g:tabline_buffer_full_path")
 	let g:tabline_buffer_full_path = 0
 endif
 if !exists("g:tabline_use_powerline_fonts")
-	let g:tabline_use_powerline_fonts = 1
+	let g:tabline_use_powerline_fonts = 0
 endif
-if exists('g:airline_symbols')
+if (g:tabline_use_powerline_fonts == 1)
 	let g:tabline_left_sep = ''
 	let g:tabline_left_alt_sep = ''
 	let g:tabline_right_sep = ''
