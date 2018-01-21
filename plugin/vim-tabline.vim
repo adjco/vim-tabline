@@ -8,8 +8,8 @@
 "
 "       Author:  Alan D. Ogden (alan@aogden.me.uk)
 "
-"      Version:  1.0
-"      Created:  May, 2016
+"      Version:  1.1
+"      Created:  January, 2018
 "  MIT License:  Copyright (c) 2016 Alan D. Ogden
 "                Permission is hereby granted, free of charge, to any person
 "                obtaining a copy of this software and associated documentation
@@ -36,9 +36,6 @@
 if has("gui_running")
 	finish
 endif
-"if !exists("s:tablineset")
-"	let s:tablineset = [0]
-"endif
 if !exists("g:tabline_buffer_full_path")
 	let g:tabline_buffer_full_path = 0
 endif
